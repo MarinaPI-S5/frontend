@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pi5/views/filaPedidos.dart';
 
 void main() {
   runApp(const MyApp());
@@ -12,10 +13,7 @@ class MyApp extends StatelessWidget {
     Widget build(BuildContext context) {
       return MaterialApp(
       title: "Marina",
-      home: Scaffold(
-        appBar: AppBar(title: Text("Marina")),
-        body: Text("PLACEHOLDER"),
-      ),
+      home: Filapedidos(),
     );
     }
 }
