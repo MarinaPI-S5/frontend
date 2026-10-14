@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:pi5/models/pedido.dart';
-import 'package:pi5/views/widgets/pedidoCard.dart';
+import 'package:frontend/models/pedido.dart';
+import 'package:frontend/views/widgets/pedidoCard.dart';
 
 class Filapedidos extends StatelessWidget {
   const new({super.key});

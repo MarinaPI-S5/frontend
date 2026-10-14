@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pi5/views/filaPedidos.dart';
+import 'package:frontend/views/filaPedidos.dart';
 
 void main() {
   runApp(const MyApp());

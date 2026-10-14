@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pi5/models/pedido.dart';
+import 'package:frontend/models/pedido.dart';
 
 class PedidoCard extends StatelessWidget {
   final Pedido pedido;
