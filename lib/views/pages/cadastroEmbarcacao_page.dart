@@ -25,7 +25,10 @@ class CadastroembarcacaoPage extends StatelessWidget {
                     child: Container(
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        border: Border.all(color: Colors.black, width: 0.5),
+                        border: Border.all(
+                          color: Colors.grey.shade400,
+                          width: 0.8,
+                        ),
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
@@ -40,22 +43,25 @@ class CadastroembarcacaoPage extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           const SizedBox(height: 16),
-                          // CORREÇÃO: Cards empilhados um abaixo do outro usando Column
                           _buildActionCard(
                             context: context,
                             icon: Icons.attach_file,
-                            color: Colors.black,
-                            title: 'Cadastrar Embarcação',
+                            color: Colors.grey.shade600,
+                            title: 'Documento TIE',
                             onTap: () {},
                           ),
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 50),
                           _buildActionCard(
                             context: context,
                             icon: Icons.attach_file,
-                            color: Colors.black,
-                            title: 'Novo Pedido',
+                            color: Colors.grey.shade600,
+                            title: 'Seguro obrigatório DEPEM',
                             onTap: () {},
                           ),
+
+                          const SizedBox(height: 50),
+
+                          _buildSubmitButton(),
                         ],
                       ),
                     ),
@@ -85,20 +91,12 @@ class CadastroembarcacaoPage extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 12),
           decoration: BoxDecoration(
-            border: Border.all(color: Colors.white),
+            border: Border.all(color: Colors.black),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  border: Border.all(color: color, width: 1.5),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(icon, color: color, size: 28),
-              ),
+              Icon(icon, color: color, size: 28),
               const SizedBox(width: 16),
               Expanded(
                 child: Text(
@@ -115,6 +113,22 @@ class CadastroembarcacaoPage extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildSubmitButton() {
+    return ElevatedButton(
+      onPressed: () {},
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.green,
+        foregroundColor: Colors.white,
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+      child: const Text(
+        'Gerar Contrato',
+        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
       ),
     );
   }
