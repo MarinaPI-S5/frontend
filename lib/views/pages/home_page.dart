@@ -12,7 +12,6 @@ class HomeClientePage extends StatelessWidget {
           children: [
             const SizedBox(height: 24),
 
-            // 1. Primeira Box ("O que deseja fazer?")
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: ConstrainedBox(
@@ -74,7 +73,6 @@ class HomeClientePage extends StatelessWidget {
 
             const SizedBox(height: 100),
 
-            // 2. Segunda Box ("Histórico de Pedidos")
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: SizedBox(
