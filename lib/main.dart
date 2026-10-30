@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/views/pages/cadastroCliente_page.dart';
+import 'package:frontend/views/pages/cadastroEmbarcacao_page.dart';
 import 'package:frontend/views/pages/home_page.dart';
 import 'package:frontend/views/widgets/headerCard.dart';
 import 'package:frontend/views/widgets/navbarCard.dart';
@@ -21,14 +22,14 @@ class _MyAppState extends State<MyApp> {
   final List<String> _titles = [
     'Bem vindo,\nCliente !',
     'Cadastro de Clientes',
-    'cadastro de Embarcações',
+    'Cadastro de Embarcações',
     'Configurações do Sistema',
   ];
 
   final List<Widget> _pages = const [
     HomeClientePage(),
     CadastroclientePage(),
-    Center(child: Text('Embarcações')),
+    CadastroembarcacaoPage(),
     Center(child: Text('Configurações')),
   ];
 
