@@ -55,8 +55,8 @@ class CustomBottomNav extends StatelessWidget {
                   label: 'Embarcações',
                 ),
                 NavigationDestination(
-                  icon: Icon(Icons.settings_outlined),
-                  label: 'Configurações',
+                  icon: Icon(Icons.view_agenda_rounded),
+                  label: 'Agendamento',
                 ),
               ],
             ),
