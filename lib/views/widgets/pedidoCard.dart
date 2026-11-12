@@ -1,38 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/models/pedido.dart';
 import 'package:frontend/views/detalhePedidos.dart';
+import 'package:frontend/views/widgets/denyAllowRow.dart';
 
 class PedidoCard extends StatelessWidget {
   final Pedido pedido;
 
-  const PedidoCard({
-    super.key,
-    required this.pedido,
-  });
+  const PedidoCard({super.key, required this.pedido});
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       borderRadius: BorderRadius.circular(10),
       onTap: () {
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => DetalhesPedidoScreen(
-        pedido: pedido,
-      ),
-    ),
-  );
-},
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => DetalhesPedidoScreen(pedido: pedido),
+          ),
+        );
+      },
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 600),
         child: Container(
           decoration: BoxDecoration(
             color: Colors.white,
-            border: Border.all(
-              color: Colors.grey,
-              width: 0.5,
-            ),
+            border: Border.all(color: Colors.grey, width: 0.5),
             borderRadius: BorderRadius.circular(10),
           ),
           padding: const EdgeInsets.all(16),
@@ -47,25 +40,18 @@ class PedidoCard extends StatelessWidget {
                 ),
               ),
 
-              _linha(
-                'Quantidade de itens',
-                pedido.qtdItens.toString(),
-              ),
+              _linha('Quantidade de itens', pedido.qtdItens.toString()),
 
-              _linha(
-                'Preço',
-                pedido.preco,
-              ),
+              _linha('Preço', pedido.preco),
 
-              _linha(
-                'Responsável',
-                pedido.responsavel,
-              ),
+              _linha('Responsável', pedido.responsavel),
 
-              _linha(
-                'Data e hora',
-                pedido.horarioPedido,
-              ),
+              _linha('Data e hora', pedido.horarioPedido),
+
+              SizedBox(width: 6),
+
+              //**********BOTÕES PARA ADM APROVAR OU NÃO O PEDIDO***********
+              //if(User.isAdmin) Denyallowrow(),
             ],
           ),
         ),
@@ -81,10 +67,7 @@ class PedidoCard extends StatelessWidget {
           flex: 4,
           child: Text(
             titulo,
-            style: const TextStyle(
-              fontSize: 18,
-              color: Colors.grey,
-            ),
+            style: const TextStyle(fontSize: 18, color: Colors.grey),
           ),
         ),
         const SizedBox(width: 16),
