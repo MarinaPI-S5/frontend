@@ -45,13 +45,17 @@ class _MyAppState extends State<MyApp> {
             children: [
               CustomHeader(
                 title: _titles[_selectedIndex],
-                onBackPressed: () {},
+                showBackButton: _selectedIndex != 0,
+                onBackPressed: () {
+                  setState(() {
+                    _selectedIndex = 0;
+                  });
+                },
               ),
               Expanded(child: _pages[_selectedIndex]),
             ],
           ),
         ),
-
         bottomNavigationBar: CustomBottomNav(
           selectedIndex: _selectedIndex,
           onDestinationSelected: (index) {

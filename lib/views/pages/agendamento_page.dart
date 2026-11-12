@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // Necessário para List<TextInputFormatter>
+import 'package:flutter/services.dart';
 import 'package:frontend/viewmodels/agendamento_viewmodel.dart';
 
 class AgendamentoPage extends StatefulWidget {
@@ -83,9 +83,21 @@ class _AgendamentoPageState extends State<AgendamentoPage> {
                 const SizedBox(height: 24),
                 ElevatedButton(
                   onPressed: () {
-                    if (_formKey.currentState!.validate()) {}
+                    final isValid = _formKey.currentState!.validate();
+                    print('formulário válido? $isValid');
                   },
-                  child: const Text('Salvar Agendamento'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: const Text(
+                    'Concluir Agendamento',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  ),
                 ),
               ],
             ),
