@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/views/pages/cadastroEmbarcacao_page.dart';
+import 'package:frontend/views/pages/agendamento_page.dart';
 
 class HomeClientePage extends StatelessWidget {
   const HomeClientePage({super.key});
@@ -50,7 +52,15 @@ class HomeClientePage extends StatelessWidget {
                               icon: Icons.sailing,
                               color: Colors.green,
                               title: 'Cadastrar\nEmbarcação',
-                              onTap: () {},
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const CadastroembarcacaoPage(),
+                                  ),
+                                );
+                              },
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -60,7 +70,15 @@ class HomeClientePage extends StatelessWidget {
                               icon: Icons.directions_boat,
                               color: Colors.blue,
                               title: 'Novo\nPedido',
-                              onTap: () {},
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const AgendamentoPage(),
+                                  ),
+                                );
+                              },
                             ),
                           ),
                         ],

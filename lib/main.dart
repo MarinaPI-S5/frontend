@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/views/pages/agendamento_page.dart';
 import 'package:frontend/views/pages/cadastroCliente_page.dart';
 import 'package:frontend/views/pages/cadastroEmbarcacao_page.dart';
 import 'package:frontend/views/pages/home_page.dart';
@@ -23,14 +24,14 @@ class _MyAppState extends State<MyApp> {
     'Bem vindo,\nCliente !',
     'Cadastro de Clientes',
     'Cadastro de Embarcações',
-    'Configurações do Sistema',
+    'Agendamento de Serviço',
   ];
 
   final List<Widget> _pages = const [
     HomeClientePage(),
     CadastroclientePage(),
     CadastroembarcacaoPage(),
-    Center(child: Text('Configurações')),
+    AgendamentoPage(),
   ];
 
   @override
@@ -44,13 +45,17 @@ class _MyAppState extends State<MyApp> {
             children: [
               CustomHeader(
                 title: _titles[_selectedIndex],
-                onBackPressed: () {},
+                showBackButton: _selectedIndex != 0,
+                onBackPressed: () {
+                  setState(() {
+                    _selectedIndex = 0;
+                  });
+                },
               ),
               Expanded(child: _pages[_selectedIndex]),
             ],
           ),
         ),
-
         bottomNavigationBar: CustomBottomNav(
           selectedIndex: _selectedIndex,
           onDestinationSelected: (index) {

@@ -1,5 +1,4 @@
 class CadastroclienteViewmodel {
-  //Nome: obrigatório, com pelo meno 3 letras
   String? validateName(String? value) {
     final name = value?.trim() ?? '';
     if (name.isEmpty) return 'Informe o seu nome';
@@ -7,7 +6,6 @@ class CadastroclienteViewmodel {
     return null;
   }
 
-  //Email: obrigatório, no formato nome@dominio.com
   String? validateEmail(String? value) {
     final email = value?.trim() ?? '';
     if (email.isEmpty) return 'Informe o seu e-mail';
