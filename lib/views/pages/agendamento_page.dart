@@ -81,6 +81,133 @@ class _AgendamentoPageState extends State<AgendamentoPage> {
                 ),
 
                 const SizedBox(height: 24),
+
+                const Text(
+                  'Pedido',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+                const SizedBox(height: 8),
+
+                // Lista de itens dinâmicos baseados no ViewModel
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: _viewModel.itensDisponiveis.length,
+                  itemBuilder: (context, index) {
+                    final item = _viewModel.itensDisponiveis[index];
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 6.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          // Checkbox e Nome do Produto
+                          Row(
+                            children: [
+                              Checkbox(
+                                value: item.selecionado,
+                                onChanged: (bool? value) {
+                                  setState(() {
+                                    _viewModel.toggleItemSelecao(item, value);
+                                  });
+                                },
+                              ),
+                              Text(
+                                item.nome,
+                                style: const TextStyle(fontSize: 16),
+                              ),
+                            ],
+                          ),
+
+                          // Controles de Quantidade (+ Quantidade -)
+                          Row(
+                            children: [
+                              InkWell(
+                                onTap: item.selecionado
+                                    ? () {
+                                        setState(() {
+                                          _viewModel.decrementarQuantidade(
+                                            item,
+                                          );
+                                        });
+                                      }
+                                    : null,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(4.0),
+                                  child: Text(
+                                    '-',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: item.selecionado
+                                          ? Colors.black
+                                          : Colors.grey,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                item.selecionado
+                                    ? '${item.quantidade}'
+                                    : 'Quantidade',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: item.selecionado
+                                      ? Colors.black
+                                      : Colors.grey,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              InkWell(
+                                onTap: item.selecionado
+                                    ? () {
+                                        setState(() {
+                                          _viewModel.incrementarQuantidade(
+                                            item,
+                                          );
+                                        });
+                                      }
+                                    : null,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(4.0),
+                                  child: Text(
+                                    '+',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: item.selecionado
+                                          ? Colors.black
+                                          : Colors.grey,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+
+                const SizedBox(height: 16),
+
+                // Valor Total Dinâmico
+                Text(
+                  'VALOR TOTAL: R${_viewModel.valorTotal.toStringAsFixed(2).replaceAll('.', ',')}',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
                 ElevatedButton(
                   onPressed: () {
                     final isValid = _formKey.currentState!.validate();
