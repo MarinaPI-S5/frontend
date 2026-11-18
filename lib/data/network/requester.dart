@@ -1,17 +1,24 @@
 import 'package:dio/dio.dart';
 
+import 'dart:convert';
+
 class Requester {
   final Dio _dio = Dio(
     BaseOptions(
-      baseUrl: 'http://localhost:3000/api-docs/v1/#/',
+      baseUrl: 'http://localhost:3000/api/v1/',
       connectTimeout: const Duration(seconds: 10),
       receiveTimeout: const Duration(seconds: 10),
       headers: {'Content-Type': 'application;json'},
     ),
   );
+
   Future<dynamic> post(String path, Map<String, dynamic> body) async {
     try {
-      final response = await _dio.post(path, data: body);
+      final response = await _dio.post(
+        path,
+        data: jsonEncode(body),
+        options: Options(contentType: 'application/json'),
+      );
       return response.data;
     } on DioException catch (e) {
       throw RequestException(_messageFor(e));

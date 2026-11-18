@@ -1,4 +1,10 @@
+import 'package:frontend/data/network/requester.dart';
+import 'package:frontend/data/repositores/cliente_repository.dart';
+import 'package:frontend/models/cliente.dart';
+
 class CadastroclienteViewmodel {
+  final ClienteRepository _repository = ClienteRepository();
+
   String? validateName(String? value) {
     final name = value?.trim() ?? '';
     if (name.isEmpty) return 'Informe o seu nome';
@@ -42,5 +48,30 @@ class CadastroclienteViewmodel {
     if (value == null || value.isEmpty) return 'Confirme a sua senha';
     if (value != password) return 'As senhas não conferem';
     return null;
+  }
+
+  Future<String?> register({
+    required String name,
+    required String email,
+    required String cpf,
+    required String rg,
+    required String password,
+  }) async {
+    final cliente = Cliente(
+      name: name,
+      email: email,
+      cpf: cpf,
+      rg: rg,
+      password: password,
+    );
+
+    try {
+      await _repository.createCliente(cliente);
+      return null;
+    } on RequestException catch (e) {
+      return e.message;
+    } catch (_) {
+      return 'Não foi possível criar a conta. Tente novamente.';
+    }
   }
 }
