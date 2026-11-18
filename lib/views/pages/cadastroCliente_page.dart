@@ -11,6 +11,7 @@ class CadastroclientePage extends StatefulWidget {
 class _SignUpPageState extends State<CadastroclientePage> {
   final _viewModel = CadastroclienteViewmodel();
 
+  bool _isLoading = false;
   bool _obscurePassword = true;
   bool _acceptedTerms = false;
 
@@ -166,8 +167,7 @@ class _SignUpPageState extends State<CadastroclientePage> {
   Widget _buildSubmitButton() {
     return ElevatedButton(
       onPressed: () {
-        final isValid = _formKey.currentState!.validate();
-        print('formulário válido? $isValid');
+        _isLoading ? null : _submit();
       },
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.green,
@@ -175,10 +175,19 @@ class _SignUpPageState extends State<CadastroclientePage> {
         padding: const EdgeInsets.symmetric(vertical: 16),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
-      child: const Text(
-        'Criar conta',
-        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-      ),
+      child: _isLoading
+          ? const SizedBox(
+              height: 20,
+              width: 20,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: Colors.lightBlueAccent,
+              ),
+            )
+          : const Text(
+              'Criar conta',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            ),
     );
   }
 
@@ -207,5 +216,43 @@ class _SignUpPageState extends State<CadastroclientePage> {
       style: TextButton.styleFrom(foregroundColor: Colors.black),
       child: const Text('Já tenho uma conta'),
     );
+  }
+
+  void _submit() async {
+    final isValid = _formKey.currentState!.validate();
+    if (!isValid) return;
+
+    if (!_acceptedTerms) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Aceite os termos de uso para continuar')),
+      );
+
+      return;
+    }
+
+    final error = await _viewModel.register(
+      name: _nameController.text,
+      email: _emailController.text,
+      cpf: _cpfController.text,
+      rg: _rgController.text,
+      password: _passwordController.text,
+    );
+
+    if (!mounted) return;
+
+    if (error != null) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(error)));
+      return;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Conta criada! Boas-vindas, ${_nameController.text.trim()}.',
+        ),
+      ),
+    );
+    Navigator.pop(context);
   }
 }
