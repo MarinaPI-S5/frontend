@@ -1,63 +1,88 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 
-class AgendamentoViewModel extends ChangeNotifier {
-  final MaskTextInputFormatter dateMaskFormatter = MaskTextInputFormatter(
+class ItemPedido {
+  final String nome;
+  final double preco;
+  bool selecionado;
+  int quantidade;
+
+  ItemPedido({
+    required this.nome,
+    required this.preco,
+    this.selecionado = false,
+    this.quantidade = 1,
+  });
+}
+
+class AgendamentoViewModel {
+  final dateMaskFormatter = MaskTextInputFormatter(
     mask: '##/##/####',
     filter: {"#": RegExp(r'[0-9]')},
-    type: MaskAutoCompletionType.lazy,
   );
 
+  final List<ItemPedido> itensDisponiveis = [
+    ItemPedido(nome: 'Gelo', preco: 10.00),
+    ItemPedido(nome: 'Carvão', preco: 25.00),
+    ItemPedido(nome: 'Água', preco: 6.00),
+    ItemPedido(nome: 'Refrigerante', preco: 8.50),
+    ItemPedido(nome: 'Cerveja', preco: 6.00),
+    ItemPedido(nome: 'Gasolina', preco: 6.50),
+  ];
+
+  // Validações dos campos de texto
   String? validateProprietario(String? value) {
-    final name = value?.trim() ?? '';
-    if (name.isEmpty) return 'Informe o nome do Proprietario';
-    if (name.length < 3) return 'O nome deve ter pelo menos 3 letras';
+    if (value == null || value.trim().isEmpty) {
+      return 'Informe o nome do proprietário';
+    }
     return null;
   }
 
   String? validateResponsavel(String? value) {
-    final name = value?.trim() ?? '';
-    if (name.isEmpty) return 'Informe o nome do Responsavel';
-    if (name.length < 3) return 'O nome deve ter pelo menos 3 letras';
+    if (value == null || value.trim().isEmpty) {
+      return 'Informe o responsável';
+    }
     return null;
   }
 
   String? validateEmbarcacao(String? value) {
-    final name = value?.trim() ?? '';
-    if (name.isEmpty) return 'Informe o nome da Embarcação';
-    if (name.length < 3) return 'O nome deve ter pelo menos 3 letras';
+    if (value == null || value.trim().isEmpty) {
+      return 'Informe o nome da embarcação';
+    }
     return null;
   }
 
   String? validateData(String? value) {
-    final data = value?.trim() ?? '';
-
-    if (data.isEmpty) {
-      return 'Informe a data';
+    if (value == null || value.trim().isEmpty) {
+      return 'Informe a data do agendamento';
     }
-
-    if (data.length < 10) {
-      return 'Digite uma data completa no formato DD/MM/AAAA';
+    if (value.length < 10) {
+      return 'Digite uma data válida (DD/MM/AAAA)';
     }
-
-    if (!_isDataValida(data)) {
-      return 'Data inválida';
-    }
-
     return null;
   }
 
-  bool _isDataValida(String dataStr) {
-    try {
-      final partes = dataStr.split('/');
-      final dia = int.parse(partes[0]);
-      final mes = int.parse(partes[1]);
-      final ano = int.parse(partes[2]);
+  void toggleItemSelecao(ItemPedido item, bool? valor) {
+    item.selecionado = valor ?? false;
+  }
 
-      final data = DateTime(ano, mes, dia);
-      return data.year == ano && data.month == mes && data.day == dia;
-    } catch (_) {
-      return false;
+  void incrementarQuantidade(ItemPedido item) {
+    item.quantidade++;
+  }
+
+  void decrementarQuantidade(ItemPedido item) {
+    if (item.quantidade > 1) {
+      item.quantidade--;
     }
+  }
+
+  double get valorTotal {
+    double total = 0.0;
+    for (var item in itensDisponiveis) {
+      if (item.selecionado) {
+        total += item.preco * item.quantidade;
+      }
+    }
+    return total;
   }
 }
