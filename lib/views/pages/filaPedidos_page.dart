@@ -3,7 +3,7 @@ import 'package:frontend/models/pedido.dart';
 import 'package:frontend/views/widgets/pedidoCard.dart';
 
 class Filapedidos extends StatelessWidget {
-  const new({super.key});
+  const Filapedidos({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -16,9 +16,9 @@ class Filapedidos extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.all(8.0),
             child: ListView.builder(
-              itemCount: listaPedidosMock.length,
+              itemCount: Pedido.listaPedidosMock.length,
               itemBuilder: (context, index) {
-                final pedidoAtual = listaPedidosMock[index];
+                final pedidoAtual = Pedido.listaPedidosMock[index];
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 30),
                   child: Center(child: PedidoCard(pedido: pedidoAtual)),
