@@ -21,7 +21,10 @@ class Requester {
       );
       return response.data;
     } on DioException catch (e) {
-      throw RequestException(_messageFor(e));
+      throw RequestException(
+        _messageFor(e),
+        statusCode: e.response?.statusCode,
+      );
     }
   }
 
@@ -58,8 +61,9 @@ class Requester {
 
 class RequestException implements Exception {
   final String message;
+  final int? statusCode;
 
-  RequestException(this.message);
+  RequestException(this.message, {this.statusCode});
 
   @override
   String toString() => message;
