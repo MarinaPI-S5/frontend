@@ -198,7 +198,7 @@ class _AgendamentoPageState extends State<AgendamentoPage> {
 
                 // Valor Total Dinâmico
                 Text(
-                  'VALOR TOTAL: R${_viewModel.valorTotal.toStringAsFixed(2).replaceAll('.', ',')}',
+                  "VALOR TOTAL: R\$ ${_viewModel.valorTotal.toStringAsFixed(2).replaceAll('.', ',')}",
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,

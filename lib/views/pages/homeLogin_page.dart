@@ -20,6 +20,15 @@ class _LoginPageState extends State<LoginPage> {
   bool _isLoading = false;
   String? _errorMessage;
 
+  static const Color _boxFillColor = Color(0xFFFFFFFF);
+  static const Color _borderColor = Color(0xFF9E9E9E);
+  static const Color _focusedBorderColor = Color(0xFF1565C0);
+  static const Color _textColor = Color(0xFF111827);
+  static const Color _labelColor = Color(0xFF4B5563);
+  static const Color _primaryButtonColor = Colors.green;
+  static const Color _primaryButtonTextColor = Colors.white;
+  static const Color _secondaryTextColor = Color(0xFF1565C0);
+
   @override
   void dispose() {
     _emailController.dispose();
@@ -62,6 +71,32 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
+  InputDecoration _inputDecoration({required String label}) {
+    return InputDecoration(
+      labelText: label,
+      labelStyle: const TextStyle(color: _labelColor),
+      floatingLabelStyle: const TextStyle(color: _focusedBorderColor),
+      filled: true,
+      fillColor: _boxFillColor,
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: _borderColor, width: 1.2),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: _focusedBorderColor, width: 2),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Colors.red, width: 1.5),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Colors.red, width: 2),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -77,20 +112,18 @@ class _LoginPageState extends State<LoginPage> {
                 TextFormField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
-                  decoration: const InputDecoration(
-                    labelText: 'E-mail',
-                    border: OutlineInputBorder(),
-                  ),
+                  style: const TextStyle(color: _textColor, fontSize: 16),
+                  cursorColor: _focusedBorderColor,
+                  decoration: _inputDecoration(label: 'E-mail'),
                   validator: _viewModel.validateEmail,
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _passwordController,
                   obscureText: true,
-                  decoration: const InputDecoration(
-                    labelText: 'Senha',
-                    border: OutlineInputBorder(),
-                  ),
+                  style: const TextStyle(color: _textColor, fontSize: 16),
+                  cursorColor: _focusedBorderColor,
+                  decoration: _inputDecoration(label: 'Senha'),
                   validator: _viewModel.validatePassword,
                 ),
                 if (_errorMessage != null) ...[
@@ -105,9 +138,20 @@ class _LoginPageState extends State<LoginPage> {
                   width: double.infinity,
                   height: 48,
                   child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _primaryButtonColor,
+                      foregroundColor: _primaryButtonTextColor,
+                    ),
                     onPressed: _isLoading ? null : _submit,
                     child: _isLoading
-                        ? const CircularProgressIndicator()
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: _primaryButtonTextColor,
+                            ),
+                          )
                         : const Text('Entrar'),
                   ),
                 ),
@@ -117,6 +161,9 @@ class _LoginPageState extends State<LoginPage> {
                   children: [
                     const Text('Ainda não tem conta?'),
                     TextButton(
+                      style: TextButton.styleFrom(
+                        foregroundColor: _secondaryTextColor,
+                      ),
                       onPressed: _isLoading ? null : _goToRegister,
                       child: const Text('Criar conta'),
                     ),
