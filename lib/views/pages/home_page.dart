@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/views/pages/cadastroEmbarcacao_page.dart';
+import 'package:frontend/data/session/session_store.dart';
+import 'package:frontend/models/auth_session.dart';
 import 'package:frontend/views/pages/agendamento_page.dart';
+import 'package:frontend/views/pages/cadastroCliente_page.dart';
+import 'package:frontend/views/pages/cadastroEmbarcacao_page.dart';
+import 'package:frontend/views/widgets/navbarCard.dart';
 
 class HomeClientePage extends StatelessWidget {
   const HomeClientePage({super.key});
@@ -120,6 +124,61 @@ class HomeClientePage extends StatelessWidget {
             const SizedBox(height: 24),
           ],
         ),
+      ),
+      bottomNavigationBar: ValueListenableBuilder<AuthSession?>(
+        valueListenable: SessionStore.notifier,
+        builder: (context, session, child) {
+          final isLoggedIn = session != null;
+
+          return CustomBottomNav(
+            selectedIndex: 0,
+            isLoggedIn: isLoggedIn,
+            onDestinationSelected: (index) {
+              if (isLoggedIn) {
+                // 0: Início | 1: Embarcações | 2: Agendamento
+                if (index == 1) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const CadastroembarcacaoPage(),
+                    ),
+                  );
+                } else if (index == 2) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AgendamentoPage(),
+                    ),
+                  );
+                }
+              } else {
+                // 0: Início | 1: Clientes | 2: Embarcações | 3: Agendamento
+                if (index == 1) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const CadastroclientePage(),
+                    ),
+                  );
+                } else if (index == 2) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const CadastroembarcacaoPage(),
+                    ),
+                  );
+                } else if (index == 3) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AgendamentoPage(),
+                    ),
+                  );
+                }
+              }
+            },
+          );
+        },
       ),
     );
   }

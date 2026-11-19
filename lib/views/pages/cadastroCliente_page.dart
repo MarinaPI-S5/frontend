@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/data/session/session_store.dart';
 import 'package:frontend/viewmodels/cadastroCliente_viewmodel.dart';
 
 class CadastroclientePage extends StatefulWidget {
@@ -25,6 +26,17 @@ class _SignUpPageState extends State<CadastroclientePage> {
   final _formKey = GlobalKey<FormState>();
 
   @override
+  void initState() {
+    super.initState();
+    if (SessionStore.notifier.value != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      });
+    }
+  }
+
+  @override
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
@@ -37,6 +49,10 @@ class _SignUpPageState extends State<CadastroclientePage> {
 
   @override
   Widget build(BuildContext context) {
+    if (SessionStore.notifier.value != null) {
+      return const SizedBox.shrink();
+    }
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -166,9 +182,7 @@ class _SignUpPageState extends State<CadastroclientePage> {
 
   Widget _buildSubmitButton() {
     return ElevatedButton(
-      onPressed: () {
-        _isLoading ? null : _submit();
-      },
+      onPressed: _isLoading ? null : _submit,
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.green,
         foregroundColor: Colors.white,
@@ -230,6 +244,10 @@ class _SignUpPageState extends State<CadastroclientePage> {
       return;
     }
 
+    setState(() {
+      _isLoading = true;
+    });
+
     final error = await _viewModel.register(
       name: _nameController.text,
       email: _emailController.text,
@@ -239,6 +257,10 @@ class _SignUpPageState extends State<CadastroclientePage> {
     );
 
     if (!mounted) return;
+
+    setState(() {
+      _isLoading = false;
+    });
 
     if (error != null) {
       ScaffoldMessenger.of(context)

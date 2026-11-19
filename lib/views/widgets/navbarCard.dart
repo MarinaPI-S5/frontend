@@ -3,15 +3,39 @@ import 'package:flutter/material.dart';
 class CustomBottomNav extends StatelessWidget {
   final int selectedIndex;
   final ValueChanged<int> onDestinationSelected;
+  final bool isLoggedIn;
 
   const CustomBottomNav({
     super.key,
     required this.selectedIndex,
     required this.onDestinationSelected,
+    this.isLoggedIn = true,
   });
 
   @override
   Widget build(BuildContext context) {
+    final destinations = <NavigationDestination>[
+      const NavigationDestination(
+        icon: Icon(Icons.home_outlined),
+        label: 'Início',
+      ),
+      if (!isLoggedIn)
+        const NavigationDestination(
+          icon: Icon(Icons.person_outlined),
+          label: 'Clientes',
+        ),
+      const NavigationDestination(
+        icon: Icon(Icons.sailing_outlined),
+        label: 'Embarcações',
+      ),
+      const NavigationDestination(
+        icon: Icon(Icons.view_agenda_rounded),
+        label: 'Agendamento',
+      ),
+    ];
+
+    final safeIndex = selectedIndex.clamp(0, destinations.length - 1);
+
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
@@ -39,26 +63,9 @@ class CustomBottomNav extends StatelessWidget {
             ),
             child: NavigationBar(
               backgroundColor: Colors.black,
-              selectedIndex: selectedIndex,
+              selectedIndex: safeIndex,
               onDestinationSelected: onDestinationSelected,
-              destinations: const [
-                NavigationDestination(
-                  icon: Icon(Icons.home_outlined),
-                  label: 'Início',
-                ),
-                NavigationDestination(
-                  icon: Icon(Icons.person_outlined),
-                  label: 'Clientes',
-                ),
-                NavigationDestination(
-                  icon: Icon(Icons.sailing_outlined),
-                  label: 'Embarcações',
-                ),
-                NavigationDestination(
-                  icon: Icon(Icons.view_agenda_rounded),
-                  label: 'Agendamento',
-                ),
-              ],
+              destinations: destinations,
             ),
           ),
         ),
