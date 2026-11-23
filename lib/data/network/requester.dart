@@ -1,6 +1,7 @@
-import 'package:dio/dio.dart';
-
 import 'dart:convert';
+
+import 'package:dio/dio.dart';
+import 'package:frontend/data/session/session_store.dart';
 
 class Requester {
   final Dio _dio = Dio(
@@ -8,16 +9,38 @@ class Requester {
       baseUrl: 'http://localhost:3000/api/v1/',
       connectTimeout: const Duration(seconds: 10),
       receiveTimeout: const Duration(seconds: 10),
-      headers: {'Content-Type': 'application;json'},
+      headers: {'Content-Type': 'application/json'},
     ),
   );
 
-  Future<dynamic> post(String path, Map<String, dynamic> body) async {
+  Requester() {
+    _dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) {
+          final token = SessionStore.current?.token;
+          if (token != null && token.isNotEmpty) {
+            options.headers['Authorization'] = 'Bearer $token';
+          }
+          handler.next(options);
+        },
+      ),
+    );
+  }
+
+  Future<dynamic> post(
+    String path,
+    dynamic body, {
+    Map<String, dynamic>? extraHeaders,
+  }) async {
     try {
+      final isFormData = body is FormData;
       final response = await _dio.post(
         path,
-        data: jsonEncode(body),
-        options: Options(contentType: 'application/json'),
+        data: isFormData ? body : jsonEncode(body),
+        options: Options(
+          contentType: isFormData ? 'multipart/form-data' : 'application/json',
+          headers: extraHeaders,
+        ),
       );
       return response.data;
     } on DioException catch (e) {
