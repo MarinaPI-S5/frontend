@@ -6,6 +6,7 @@ import 'package:frontend/data/network/embarcacao_request.dart';
 import 'package:frontend/models/documento_embarcacao.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
+import 'package:frontend/data/session/session_store.dart';
 
 class EmbarcacaoRepository {
   final String baseUrl;
@@ -59,7 +60,7 @@ class EmbarcacaoRepository {
     final uri = _buildUri('/boat');
     final request = http.MultipartRequest('POST', uri);
 
-    request.fields['id'] = requestData.clienteId;
+    request.fields['clientId'] = requestData.clienteId;
     request.fields['name'] = requestData.name;
 
     if (requestData.boatdoc != null) {
@@ -82,11 +83,10 @@ class EmbarcacaoRepository {
       }
     }
 
-    // Se o backend usar token Bearer na sessão, adicione aqui:
-    // final token = SessionStore.notifier.value?.token;
-    // if (token != null && token.isNotEmpty) {
-    //   request.headers['Authorization'] = 'Bearer $token';
-    // }
+    final token = SessionStore.notifier.value?.token;
+    if (token != null && token.isNotEmpty) {
+      request.headers['Authorization'] = 'Bearer $token';
+    }
 
     final streamedResponse = await _client.send(request);
     final response = await http.Response.fromStream(streamedResponse);

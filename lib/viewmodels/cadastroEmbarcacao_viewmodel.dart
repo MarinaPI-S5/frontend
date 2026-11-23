@@ -10,7 +10,7 @@ class CadastroEmbarcacaoViewModel {
   CadastroEmbarcacaoViewModel({EmbarcacaoRepository? repository})
     : _repository = repository ?? EmbarcacaoRepository();
 
-  static const int maxFileSizeBytes = 10 * 1024 * 1024;
+  static const int maxFileSizeBytes = 25 * 1024 * 1024;
 
   final ValueNotifier<DocumentoEmbarcacao?> boatdocNotifier =
       ValueNotifier<DocumentoEmbarcacao?>(null);
@@ -51,7 +51,7 @@ class CadastroEmbarcacaoViewModel {
       if (doc == null) return;
 
       if (doc.sizeInBytes > maxFileSizeBytes) {
-        errorNotifier.value = 'O arquivo deve ter no máximo 10 MB.';
+        errorNotifier.value = 'O arquivo deve ter no máximo 25 MB.';
         return;
       }
 
