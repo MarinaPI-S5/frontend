@@ -1,9 +1,11 @@
 abstract class Embarcacao {
+  final String? id;
   final String embarcacao;
   final String dono;
   final String telefone;
 
   Embarcacao({
+    this.id,
     required this.embarcacao,
     required this.dono,
     required this.telefone,
@@ -12,10 +14,30 @@ abstract class Embarcacao {
 
 class EmbarcacaoCadastrada extends Embarcacao {
   EmbarcacaoCadastrada({
+    super.id,
     required super.embarcacao,
     required super.dono,
     required super.telefone,
   });
+
+  factory EmbarcacaoCadastrada.fromJson(Map<String, dynamic> json) {
+    final clientData = json['client'];
+    final clientPhone = clientData is Map
+        ? clientData['phone']?.toString()
+        : null;
+    final clientName = clientData is Map
+        ? clientData['name']?.toString()
+        : null;
+
+    return EmbarcacaoCadastrada(
+      id: json['_id']?.toString() ?? json['id']?.toString(),
+      embarcacao: json['name']?.toString() ?? '',
+      dono: (json['owner']?.toString().trim().isNotEmpty == true)
+          ? json['owner'].toString().trim()
+          : (clientName ?? ''),
+      telefone: clientPhone ?? '',
+    );
+  }
 }
 
 final List<EmbarcacaoCadastrada> listaEmbarcacoesMock = [

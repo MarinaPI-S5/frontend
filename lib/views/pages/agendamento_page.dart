@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:frontend/models/embarcacao.dart';
 import 'package:frontend/viewmodels/agendamento_viewmodel.dart';
 
 class AgendamentoPage extends StatefulWidget {
@@ -14,17 +15,31 @@ class _AgendamentoPageState extends State<AgendamentoPage> {
 
   final _proprietarioController = TextEditingController();
   final _responsavelController = TextEditingController();
-  final _embarcacaoController = TextEditingController();
   final _dataController = TextEditingController();
 
   final _formKey = GlobalKey<FormState>();
 
   @override
+  void initState() {
+    super.initState();
+    _viewModel.proprietarioNotifier.addListener(_onProprietarioChanged);
+    _viewModel.carregarDadosIniciais();
+  }
+
+  void _onProprietarioChanged() {
+    final novoNome = _viewModel.proprietarioNotifier.value;
+    if (_proprietarioController.text != novoNome) {
+      _proprietarioController.text = novoNome;
+    }
+  }
+
+  @override
   void dispose() {
+    _viewModel.proprietarioNotifier.removeListener(_onProprietarioChanged);
     _proprietarioController.dispose();
     _responsavelController.dispose();
-    _embarcacaoController.dispose();
     _dataController.dispose();
+    _viewModel.dispose();
     super.dispose();
   }
 
@@ -62,12 +77,7 @@ class _AgendamentoPageState extends State<AgendamentoPage> {
                 ),
                 const SizedBox(height: 16),
 
-                _buildField(
-                  label: 'Nome da Embarcação',
-                  icon: Icons.directions_boat,
-                  validator: _viewModel.validateEmbarcacao,
-                  controller: _embarcacaoController,
-                ),
+                _buildEmbarcacaoSelector(),
                 const SizedBox(height: 16),
 
                 _buildField(
@@ -231,6 +241,112 @@ class _AgendamentoPageState extends State<AgendamentoPage> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildEmbarcacaoSelector() {
+    return ValueListenableBuilder<bool>(
+      valueListenable: _viewModel.isLoadingEmbarcacoesNotifier,
+      builder: (context, isLoading, _) {
+        if (isLoading) {
+          return InputDecorator(
+            decoration: InputDecoration(
+              labelText: 'Nome da Embarcação',
+              prefixIcon: const Icon(Icons.directions_boat),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            child: const Row(
+              children: [
+                SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+                SizedBox(width: 12),
+                Text('Carregando embarcações...'),
+              ],
+            ),
+          );
+        }
+
+        return ValueListenableBuilder<List<EmbarcacaoCadastrada>>(
+          valueListenable: _viewModel.embarcacoesNotifier,
+          builder: (context, embarcacoes, _) {
+            return ValueListenableBuilder<EmbarcacaoCadastrada?>(
+              valueListenable: _viewModel.embarcacaoSelecionadaNotifier,
+              builder: (context, selecionada, _) {
+                final erroApi = _viewModel.erroEmbarcacoesNotifier.value;
+                final valorValido =
+                    selecionada != null && embarcacoes.contains(selecionada)
+                    ? selecionada
+                    : (embarcacoes.isNotEmpty ? embarcacoes.first : null);
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    DropdownButtonFormField<EmbarcacaoCadastrada>(
+                      value: valorValido,
+                      isExpanded: true,
+                      validator: _viewModel.validateEmbarcacao,
+                      decoration: InputDecoration(
+                        labelText: 'Nome da Embarcação',
+                        prefixIcon: const Icon(Icons.directions_boat),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(
+                            color: Colors.black,
+                            width: 2,
+                          ),
+                        ),
+                        floatingLabelStyle: const TextStyle(
+                          color: Colors.black,
+                        ),
+                      ),
+                      hint: Text(
+                        embarcacoes.isEmpty
+                            ? 'Nenhuma embarcação cadastrada'
+                            : 'Selecione a embarcação',
+                      ),
+                      items: embarcacoes.map((emb) {
+                        return DropdownMenuItem<EmbarcacaoCadastrada>(
+                          value: emb,
+                          child: Text(
+                            emb.embarcacao,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: embarcacoes.isEmpty
+                          ? null
+                          : (EmbarcacaoCadastrada? novaEscolha) {
+                              _viewModel.selecionarEmbarcacao(novaEscolha);
+                            },
+                    ),
+                    if (erroApi != null && erroApi.isNotEmpty) ...[
+                      const SizedBox(height: 6),
+                      Text(
+                        erroApi,
+                        style: const TextStyle(color: Colors.red, fontSize: 12),
+                      ),
+                    ] else if (embarcacoes.isEmpty) ...[
+                      const SizedBox(height: 6),
+                      const Text(
+                        'Cadastre uma embarcação antes de agendar.',
+                        style: TextStyle(color: Colors.black54, fontSize: 12),
+                      ),
+                    ],
+                  ],
+                );
+              },
+            );
+          },
+        );
+      },
     );
   }
 

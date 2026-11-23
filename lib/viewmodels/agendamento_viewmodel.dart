@@ -1,4 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:frontend/data/repositores/embarcacao_repository.dart';
+import 'package:frontend/data/session/session_store.dart';
+import 'package:frontend/models/auth_session.dart';
+import 'package:frontend/models/embarcacao.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 
 class ItemPedido {
@@ -16,11 +21,30 @@ class ItemPedido {
 }
 
 class AgendamentoViewModel {
+  final EmbarcacaoRepository _embarcacaoRepository;
+
+  AgendamentoViewModel({EmbarcacaoRepository? embarcacaoRepository})
+    : _embarcacaoRepository = embarcacaoRepository ?? EmbarcacaoRepository();
+
   final dateMaskFormatter = MaskTextInputFormatter(
     mask: '##/##/####',
     filter: {"#": RegExp(r'[0-9]')},
   );
 
+  // Estados reativos para proprietário, embarcações e carregamento
+  final ValueNotifier<String> proprietarioNotifier = ValueNotifier<String>('');
+  final ValueNotifier<List<EmbarcacaoCadastrada>> embarcacoesNotifier =
+      ValueNotifier<List<EmbarcacaoCadastrada>>([]);
+  final ValueNotifier<EmbarcacaoCadastrada?> embarcacaoSelecionadaNotifier =
+      ValueNotifier<EmbarcacaoCadastrada?>(null);
+  final ValueNotifier<bool> isLoadingEmbarcacoesNotifier = ValueNotifier<bool>(
+    false,
+  );
+  final ValueNotifier<String?> erroEmbarcacoesNotifier = ValueNotifier<String?>(
+    null,
+  );
+
+  // Opção de adicionar produtos e calcular valor total (intacta)
   final List<ItemPedido> itensDisponiveis = [
     ItemPedido(nome: 'Gelo', preco: 10.00),
     ItemPedido(nome: 'Carvão', preco: 25.00),
@@ -29,6 +53,57 @@ class AgendamentoViewModel {
     ItemPedido(nome: 'Cerveja', preco: 6.00),
     ItemPedido(nome: 'Gasolina', preco: 6.50),
   ];
+
+  Future<void> carregarDadosIniciais() async {
+    erroEmbarcacoesNotifier.value = null;
+
+    final AuthSession? session = SessionStore.current;
+    final clienteId = session?.user.id.trim() ?? '';
+    final emailCliente = session?.user.email.trim() ?? '';
+
+    if (clienteId.isEmpty) {
+      proprietarioNotifier.value = emailCliente;
+      embarcacoesNotifier.value = [];
+      embarcacaoSelecionadaNotifier.value = null;
+      return;
+    }
+
+    isLoadingEmbarcacoesNotifier.value = true;
+    try {
+      final lista = await _embarcacaoRepository.listarEmbarcacoesPorCliente(
+        clienteId,
+      );
+      embarcacoesNotifier.value = lista;
+
+      if (lista.isNotEmpty) {
+        final primeira = lista.first;
+        embarcacaoSelecionadaNotifier.value = primeira;
+        proprietarioNotifier.value = primeira.dono.trim().isNotEmpty
+            ? primeira.dono.trim()
+            : emailCliente;
+      } else {
+        embarcacaoSelecionadaNotifier.value = null;
+        proprietarioNotifier.value = emailCliente;
+      }
+    } catch (e) {
+      erroEmbarcacoesNotifier.value = e.toString().replaceFirst(
+        'Exception: ',
+        '',
+      );
+      proprietarioNotifier.value = emailCliente;
+      embarcacoesNotifier.value = [];
+      embarcacaoSelecionadaNotifier.value = null;
+    } finally {
+      isLoadingEmbarcacoesNotifier.value = false;
+    }
+  }
+
+  void selecionarEmbarcacao(EmbarcacaoCadastrada? embarcacao) {
+    embarcacaoSelecionadaNotifier.value = embarcacao;
+    if (embarcacao != null && embarcacao.dono.trim().isNotEmpty) {
+      proprietarioNotifier.value = embarcacao.dono.trim();
+    }
+  }
 
   // Validações dos campos de texto
   String? validateProprietario(String? value) {
@@ -45,9 +120,9 @@ class AgendamentoViewModel {
     return null;
   }
 
-  String? validateEmbarcacao(String? value) {
-    if (value == null || value.trim().isEmpty) {
-      return 'Informe o nome da embarcação';
+  String? validateEmbarcacao(EmbarcacaoCadastrada? embarcacao) {
+    if (embarcacao == null || embarcacao.embarcacao.trim().isEmpty) {
+      return 'Selecione uma embarcação';
     }
     return null;
   }
@@ -84,5 +159,13 @@ class AgendamentoViewModel {
       }
     }
     return total;
+  }
+
+  void dispose() {
+    proprietarioNotifier.dispose();
+    embarcacoesNotifier.dispose();
+    embarcacaoSelecionadaNotifier.dispose();
+    isLoadingEmbarcacoesNotifier.dispose();
+    erroEmbarcacoesNotifier.dispose();
   }
 }
