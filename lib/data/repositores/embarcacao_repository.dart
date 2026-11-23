@@ -3,10 +3,11 @@ import 'dart:convert';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:frontend/data/network/embarcacao_request.dart';
+import 'package:frontend/data/session/session_store.dart';
 import 'package:frontend/models/documento_embarcacao.dart';
+import 'package:frontend/models/embarcacao.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
-import 'package:frontend/data/session/session_store.dart';
 
 class EmbarcacaoRepository {
   final String baseUrl;
@@ -23,6 +24,20 @@ class EmbarcacaoRepository {
         : baseUrl;
     final normalizedPath = path.startsWith('/') ? path.substring(1) : path;
     return Uri.parse('$normalizedBase/$normalizedPath');
+  }
+
+  Map<String, String> _authHeaders({bool jsonContent = false}) {
+    final headers = <String, String>{};
+    if (jsonContent) {
+      headers['Content-Type'] = 'application/json';
+    }
+
+    final token = SessionStore.notifier.value?.token;
+    if (token != null && token.isNotEmpty) {
+      headers['Authorization'] = 'Bearer $token';
+    }
+
+    return headers;
   }
 
   Future<DocumentoEmbarcacao?> pickDocument() async {
@@ -56,6 +71,46 @@ class EmbarcacaoRepository {
     );
   }
 
+  Future<List<EmbarcacaoCadastrada>> listarEmbarcacoesPorCliente(
+    String clienteId,
+  ) async {
+    final uri = _buildUri('/boat/client/$clienteId');
+    final response = await _client.get(
+      uri,
+      headers: _authHeaders(jsonContent: true),
+    );
+
+    if (response.statusCode == 404) {
+      return [];
+    }
+
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw Exception(
+        _parseErrorMessage(
+          response,
+          fallback: 'Erro ao buscar embarcações (${response.statusCode}).',
+        ),
+      );
+    }
+
+    if (response.body.isEmpty) {
+      return [];
+    }
+
+    final decoded = jsonDecode(response.body);
+    final rawList = decoded is Map && decoded['data'] is List
+        ? decoded['data'] as List
+        : (decoded is List ? decoded : const []);
+
+    return rawList
+        .whereType()
+        .map(
+          (item) =>
+              EmbarcacaoCadastrada.fromJson(Map<String, dynamic>.from(item)),
+        )
+        .toList();
+  }
+
   Future<void> criarEmbarcacao(EmbarcacaoRequest requestData) async {
     final uri = _buildUri('/boat');
     final request = http.MultipartRequest('POST', uri);
@@ -83,30 +138,36 @@ class EmbarcacaoRepository {
       }
     }
 
-    final token = SessionStore.notifier.value?.token;
-    if (token != null && token.isNotEmpty) {
-      request.headers['Authorization'] = 'Bearer $token';
-    }
+    request.headers.addAll(_authHeaders());
 
     final streamedResponse = await _client.send(request);
     final response = await http.Response.fromStream(streamedResponse);
 
     if (response.statusCode < 200 || response.statusCode >= 300) {
-      String message = 'Erro ao cadastrar embarcação (${response.statusCode}).';
-      if (response.body.isNotEmpty) {
-        try {
-          final decoded = jsonDecode(response.body);
-          if (decoded is Map && decoded['message'] != null) {
-            message = decoded['message'].toString();
-          } else {
-            message = _extractErrorText(response.body);
-          }
-        } catch (_) {
-          message = _extractErrorText(response.body);
-        }
-      }
-      throw Exception(message);
+      throw Exception(
+        _parseErrorMessage(
+          response,
+          fallback: 'Erro ao cadastrar embarcação (${response.statusCode}).',
+        ),
+      );
     }
+  }
+
+  String _parseErrorMessage(
+    http.Response response, {
+    required String fallback,
+  }) {
+    if (response.body.isEmpty) return fallback;
+
+    try {
+      final decoded = jsonDecode(response.body);
+      if (decoded is Map && decoded['message'] != null) {
+        return decoded['message'].toString();
+      }
+    } catch (_) {}
+
+    final extracted = _extractErrorText(response.body);
+    return extracted.isNotEmpty ? extracted : fallback;
   }
 
   String _extractErrorText(String body) {

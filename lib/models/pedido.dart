@@ -8,6 +8,7 @@ class Pedido extends Embarcacao {
   DateTime horarioBrutoPedido;
 
   Pedido({
+    super.id,
     required super.embarcacao,
     required super.dono,
     required super.telefone,
