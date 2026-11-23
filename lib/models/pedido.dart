@@ -22,7 +22,7 @@ class Pedido extends Embarcacao {
     final formatador = NumberFormat.currency(
       locale: 'pt_BR',
       symbol: 'R\$',
-      decimalDigits: 0,
+      decimalDigits: 2,
     );
 
     return formatador.format(valor);
