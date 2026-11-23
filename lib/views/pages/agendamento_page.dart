@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:frontend/models/embarcacao.dart';
 import 'package:frontend/viewmodels/agendamento_viewmodel.dart';
+import 'package:frontend/views/pages/pedidoProgress_page.dart';
 
 class AgendamentoPage extends StatefulWidget {
   const AgendamentoPage({super.key});
@@ -41,6 +42,23 @@ class _AgendamentoPageState extends State<AgendamentoPage> {
     _dataController.dispose();
     _viewModel.dispose();
     super.dispose();
+  }
+
+  void _aoConcluirAgendamento() {
+    final isValid = _formKey.currentState?.validate() ?? false;
+    if (!isValid) return;
+
+    final novoPedido = _viewModel.concluirAgendamento(
+      proprietario: _proprietarioController.text,
+      responsavel: _responsavelController.text,
+      dataTexto: _dataController.text,
+    );
+
+    if (novoPedido == null) return;
+
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => PedidoProgressPage(pedido: novoPedido)),
+    );
   }
 
   @override
@@ -102,7 +120,6 @@ class _AgendamentoPageState extends State<AgendamentoPage> {
                 ),
                 const SizedBox(height: 8),
 
-                // Lista de itens dinâmicos baseados no ViewModel
                 ListView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
@@ -114,7 +131,6 @@ class _AgendamentoPageState extends State<AgendamentoPage> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          // Checkbox e Nome do Produto
                           Row(
                             children: [
                               Checkbox(
@@ -131,8 +147,6 @@ class _AgendamentoPageState extends State<AgendamentoPage> {
                               ),
                             ],
                           ),
-
-                          // Controles de Quantidade (+ Quantidade -)
                           Row(
                             children: [
                               InkWell(
@@ -206,7 +220,6 @@ class _AgendamentoPageState extends State<AgendamentoPage> {
 
                 const SizedBox(height: 16),
 
-                // Valor Total Dinâmico
                 Text(
                   "VALOR TOTAL: R\$ ${_viewModel.valorTotal.toStringAsFixed(2).replaceAll('.', ',')}",
                   style: const TextStyle(
@@ -219,10 +232,7 @@ class _AgendamentoPageState extends State<AgendamentoPage> {
                 const SizedBox(height: 24),
 
                 ElevatedButton(
-                  onPressed: () {
-                    final isValid = _formKey.currentState!.validate();
-                    print('formulário válido? $isValid');
-                  },
+                  onPressed: _aoConcluirAgendamento,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
                     foregroundColor: Colors.white,

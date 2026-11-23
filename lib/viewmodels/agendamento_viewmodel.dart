@@ -1,9 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:frontend/data/repositores/embarcacao_repository.dart';
+import 'package:frontend/data/session/pedido_store.dart';
 import 'package:frontend/data/session/session_store.dart';
 import 'package:frontend/models/auth_session.dart';
 import 'package:frontend/models/embarcacao.dart';
+import 'package:frontend/models/pedido.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 
 class ItemPedido {
@@ -31,7 +33,6 @@ class AgendamentoViewModel {
     filter: {"#": RegExp(r'[0-9]')},
   );
 
-  // Estados reativos para proprietário, embarcações e carregamento
   final ValueNotifier<String> proprietarioNotifier = ValueNotifier<String>('');
   final ValueNotifier<List<EmbarcacaoCadastrada>> embarcacoesNotifier =
       ValueNotifier<List<EmbarcacaoCadastrada>>([]);
@@ -43,8 +44,9 @@ class AgendamentoViewModel {
   final ValueNotifier<String?> erroEmbarcacoesNotifier = ValueNotifier<String?>(
     null,
   );
+  final ValueNotifier<List<Pedido>> pedidosSalvosNotifier =
+      ValueNotifier<List<Pedido>>([]);
 
-  // Opção de adicionar produtos e calcular valor total (intacta)
   final List<ItemPedido> itensDisponiveis = [
     ItemPedido(nome: 'Gelo', preco: 10.00),
     ItemPedido(nome: 'Carvão', preco: 25.00),
@@ -105,7 +107,56 @@ class AgendamentoViewModel {
     }
   }
 
-  // Validações dos campos de texto
+  Pedido? concluirAgendamento({
+    required String proprietario,
+    required String responsavel,
+    required String dataTexto,
+  }) {
+    final embarcacaoAtual = embarcacaoSelecionadaNotifier.value;
+    if (embarcacaoAtual == null) return null;
+
+    final dataParseada = _parseData(dataTexto) ?? DateTime.now();
+
+    int totalQtdItens = 0;
+    for (final item in itensDisponiveis) {
+      if (item.selecionado) {
+        totalQtdItens += item.quantidade;
+      }
+    }
+
+    final pedidoCriado = Pedido(
+      id: embarcacaoAtual.id,
+      embarcacao: embarcacaoAtual.embarcacao,
+      dono: proprietario.trim().isNotEmpty
+          ? proprietario.trim()
+          : embarcacaoAtual.dono,
+      telefone: embarcacaoAtual.telefone,
+      responsavel: responsavel.trim(),
+      qtdItens: totalQtdItens,
+      valor: valorTotal,
+      horarioBrutoPedido: dataParseada,
+    );
+
+    PedidoStore.adicionar(pedidoCriado);
+    pedidosSalvosNotifier.value = [
+      ...pedidosSalvosNotifier.value,
+      pedidoCriado,
+    ];
+    return pedidoCriado;
+  }
+
+  DateTime? _parseData(String value) {
+    final partes = value.split('/');
+    if (partes.length != 3) return null;
+    final dia = int.tryParse(partes[0]);
+    final mes = int.tryParse(partes[1]);
+    final ano = int.tryParse(partes[2]);
+    if (dia == null || mes == null || ano == null) return null;
+    if (mes < 1 || mes > 12 || dia < 1 || dia > 31) return null;
+    final agora = DateTime.now();
+    return DateTime(ano, mes, dia, agora.hour, agora.minute);
+  }
+
   String? validateProprietario(String? value) {
     if (value == null || value.trim().isEmpty) {
       return 'Informe o nome do proprietário';
@@ -167,5 +218,6 @@ class AgendamentoViewModel {
     embarcacaoSelecionadaNotifier.dispose();
     isLoadingEmbarcacoesNotifier.dispose();
     erroEmbarcacoesNotifier.dispose();
+    pedidosSalvosNotifier.dispose();
   }
 }

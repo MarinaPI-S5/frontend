@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/data/session/pedido_store.dart';
 import 'package:frontend/data/session/session_store.dart';
 import 'package:frontend/models/auth_session.dart';
+import 'package:frontend/models/pedido.dart';
 import 'package:frontend/views/pages/agendamento_page.dart';
 import 'package:frontend/views/pages/cadastroCliente_page.dart';
 import 'package:frontend/views/pages/cadastroEmbarcacao_page.dart';
+import 'package:frontend/views/pages/pedidoProgress_page.dart';
 import 'package:frontend/views/widgets/navbarCard.dart';
 
 class HomeClientePage extends StatelessWidget {
@@ -89,10 +92,10 @@ class HomeClientePage extends StatelessWidget {
               ),
             ),
 
-            const SizedBox(height: 100),
+            const SizedBox(height: 32),
 
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: SizedBox(
                 width: double.infinity,
                 child: ConstrainedBox(
@@ -107,14 +110,78 @@ class HomeClientePage extends StatelessWidget {
                       borderRadius: BorderRadius.circular(16),
                     ),
                     padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        Text(
-                          "Histórico de Pedidos\n\nPedido #4321",
-                          style: TextStyle(fontSize: 10),
-                        ),
-                      ],
+                    child: ValueListenableBuilder<List<Pedido>>(
+                      valueListenable: PedidoStore.notifier,
+                      builder: (context, pedidos, _) {
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Histórico de Pedidos',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black87,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            if (pedidos.isEmpty)
+                              const Text(
+                                'Nenhum pedido realizado ainda.',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.black54,
+                                ),
+                              )
+                            else
+                              ListView.separated(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemCount: pedidos.length,
+                                separatorBuilder: (_, _) =>
+                                    const Divider(height: 12),
+                                itemBuilder: (context, index) {
+                                  final pedido = pedidos[index];
+                                  return ListTile(
+                                    contentPadding: EdgeInsets.zero,
+                                    leading: const Icon(
+                                      Icons.receipt_long,
+                                      color: Colors.blue,
+                                    ),
+                                    title: Text(
+                                      pedido.embarcacao,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                    subtitle: Text(
+                                      'Resp.: ${pedido.responsavel} • ${pedido.horarioPedido}',
+                                      style: const TextStyle(fontSize: 12),
+                                    ),
+                                    trailing: Text(
+                                      pedido.preco,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) => PedidoProgressPage(
+                                            pedido: pedido,
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  );
+                                },
+                              ),
+                          ],
+                        );
+                      },
                     ),
                   ),
                 ),
@@ -135,7 +202,6 @@ class HomeClientePage extends StatelessWidget {
             isLoggedIn: isLoggedIn,
             onDestinationSelected: (index) {
               if (isLoggedIn) {
-                // 0: Início | 1: Embarcações | 2: Agendamento
                 if (index == 1) {
                   Navigator.push(
                     context,
