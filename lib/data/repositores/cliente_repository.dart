@@ -8,7 +8,6 @@ class ClienteRepository {
   final ClienteService _clienteService = ClienteService();
   final LoginService _loginService = LoginService();
 
-  // 1. Registo de um novo cliente
   Future<void> createCliente(Cliente cliente) async {
     await _clienteService.postCliente(cliente);
   }

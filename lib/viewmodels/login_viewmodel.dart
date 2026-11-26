@@ -1,6 +1,7 @@
 import 'package:frontend/data/network/requester.dart';
 import 'package:frontend/data/repositores/cliente_repository.dart';
-import 'package:frontend/models/auth_session.dart'; // Ajuste para AuthResponse ou AuthSession
+import 'package:frontend/data/session/session_store.dart';
+import 'package:frontend/models/auth_session.dart';
 
 class LoginViewmodel {
   final ClienteRepository _repository = ClienteRepository();
@@ -22,7 +23,9 @@ class LoginViewmodel {
     required String password,
   }) async {
     try {
-      session = await _repository.login(email.trim(), password);
+      final authSession = await _repository.login(email.trim(), password);
+      session = authSession;
+      await SessionStore.save(authSession);
 
       return null;
     } on RequestException catch (e) {

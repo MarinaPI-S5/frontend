@@ -19,6 +19,7 @@ class _AgendamentoPageState extends State<AgendamentoPage> {
   final _dataController = TextEditingController();
 
   final _formKey = GlobalKey<FormState>();
+  bool _isSubmitting = false;
 
   @override
   void initState() {
@@ -44,21 +45,50 @@ class _AgendamentoPageState extends State<AgendamentoPage> {
     super.dispose();
   }
 
-  void _aoConcluirAgendamento() {
+  Future<void> _aoConcluirAgendamento() async {
+    if (_isSubmitting) return;
+
     final isValid = _formKey.currentState?.validate() ?? false;
     if (!isValid) return;
 
-    final novoPedido = _viewModel.concluirAgendamento(
-      proprietario: _proprietarioController.text,
-      responsavel: _responsavelController.text,
-      dataTexto: _dataController.text,
-    );
+    setState(() {
+      _isSubmitting = true;
+    });
 
-    if (novoPedido == null) return;
+    try {
+      final novoPedido = await _viewModel.concluirAgendamento(
+        proprietario: _proprietarioController.text,
+        responsavel: _responsavelController.text,
+        dataTexto: _dataController.text,
+      );
 
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => PedidoProgressPage(pedido: novoPedido)),
-    );
+      if (!mounted) return;
+
+      if (novoPedido == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Não foi possível concluir o agendamento.'),
+          ),
+        );
+        return;
+      }
+
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => PedidoProgressPage(pedido: novoPedido),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Erro ao salvar pedido: $e')));
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+      }
+    }
   }
 
   @override
@@ -135,11 +165,16 @@ class _AgendamentoPageState extends State<AgendamentoPage> {
                             children: [
                               Checkbox(
                                 value: item.selecionado,
-                                onChanged: (bool? value) {
-                                  setState(() {
-                                    _viewModel.toggleItemSelecao(item, value);
-                                  });
-                                },
+                                onChanged: _isSubmitting
+                                    ? null
+                                    : (bool? value) {
+                                        setState(() {
+                                          _viewModel.toggleItemSelecao(
+                                            item,
+                                            value,
+                                          );
+                                        });
+                                      },
                               ),
                               Text(
                                 item.nome,
@@ -150,7 +185,7 @@ class _AgendamentoPageState extends State<AgendamentoPage> {
                           Row(
                             children: [
                               InkWell(
-                                onTap: item.selecionado
+                                onTap: (!_isSubmitting && item.selecionado)
                                     ? () {
                                         setState(() {
                                           _viewModel.decrementarQuantidade(
@@ -166,7 +201,8 @@ class _AgendamentoPageState extends State<AgendamentoPage> {
                                     style: TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,
-                                      color: item.selecionado
+                                      color:
+                                          (!_isSubmitting && item.selecionado)
                                           ? Colors.black
                                           : Colors.grey,
                                     ),
@@ -187,7 +223,7 @@ class _AgendamentoPageState extends State<AgendamentoPage> {
                               ),
                               const SizedBox(width: 8),
                               InkWell(
-                                onTap: item.selecionado
+                                onTap: (!_isSubmitting && item.selecionado)
                                     ? () {
                                         setState(() {
                                           _viewModel.incrementarQuantidade(
@@ -203,7 +239,8 @@ class _AgendamentoPageState extends State<AgendamentoPage> {
                                     style: TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,
-                                      color: item.selecionado
+                                      color:
+                                          (!_isSubmitting && item.selecionado)
                                           ? Colors.black
                                           : Colors.grey,
                                     ),
@@ -232,7 +269,7 @@ class _AgendamentoPageState extends State<AgendamentoPage> {
                 const SizedBox(height: 24),
 
                 ElevatedButton(
-                  onPressed: _aoConcluirAgendamento,
+                  onPressed: _isSubmitting ? null : _aoConcluirAgendamento,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
                     foregroundColor: Colors.white,
@@ -241,10 +278,22 @@ class _AgendamentoPageState extends State<AgendamentoPage> {
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
-                  child: const Text(
-                    'Concluir Agendamento',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                  ),
+                  child: _isSubmitting
+                      ? const SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Text(
+                          'Concluir Agendamento',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                 ),
               ],
             ),
@@ -331,7 +380,7 @@ class _AgendamentoPageState extends State<AgendamentoPage> {
                           ),
                         );
                       }).toList(),
-                      onChanged: embarcacoes.isEmpty
+                      onChanged: (_isSubmitting || embarcacoes.isEmpty)
                           ? null
                           : (EmbarcacaoCadastrada? novaEscolha) {
                               _viewModel.selecionarEmbarcacao(novaEscolha);
@@ -372,6 +421,7 @@ class _AgendamentoPageState extends State<AgendamentoPage> {
     String? hintText,
   }) {
     return TextFormField(
+      enabled: !_isSubmitting,
       keyboardType: keyboardType,
       obscureText: obscureText,
       controller: controller,
