@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/data/session/session_store.dart';
 import 'package:frontend/main.dart';
 import 'package:frontend/viewmodels/login_viewmodel.dart';
+import 'package:frontend/views/pages/admin_shell_page.dart';
 import 'package:frontend/views/pages/cadastroCliente_page.dart';
 import 'package:frontend/views/pages/home_page.dart';
 
@@ -57,9 +59,14 @@ class _LoginPageState extends State<LoginPage> {
     });
 
     if (error == null) {
+      final isAdmin = SessionStore.current?.user.isAdmin ?? false;
+      final destino = isAdmin
+          ? const AdminShellPage()
+          : const HomeClientePage();
+
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const HomeClientePage()),
+        MaterialPageRoute(builder: (context) => destino),
       );
     }
   }
